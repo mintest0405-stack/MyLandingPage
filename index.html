@@ -399,6 +399,90 @@
       background: linear-gradient(180deg, #f3fbff, #ffffff);
     }
 
+    .guestbook {
+      padding: clamp(76px, 10vw, 118px) 0;
+      background: #ffffff;
+    }
+
+    .guestbook h2 {
+      margin: 0 0 24px;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.15;
+    }
+
+    .guestbook-grid {
+      display: grid;
+      gap: 36px;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    }
+
+    .guestbook-form,
+    .guestbook-list {
+      padding: 32px;
+      background: #f8fbff;
+      border: 1px solid #dfe6ee;
+      border-radius: 20px;
+    }
+
+    .guestbook-form label {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .guestbook-form input,
+    .guestbook-form textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1px solid #dce4ed;
+      border-radius: 14px;
+      font: inherit;
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    .guestbook-form button {
+      width: 100%;
+      min-height: 52px;
+      background: var(--blue);
+      color: var(--white);
+      border-radius: 14px;
+      font-weight: 900;
+    }
+
+    .guestbook-item {
+      padding: 20px;
+      margin-bottom: 16px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #e8edf2;
+    }
+
+    .guestbook-item strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .guestbook-item p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    .guestbook-item time {
+      display: block;
+      color: rgba(102, 112, 122, 0.9);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
     .faq-layout {
       display: grid;
       grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
@@ -617,6 +701,12 @@
 
       .footer-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 960px) {
+      .guestbook-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -842,6 +932,24 @@
         </section>
       </div>
     </section>
+
+    <section class="guestbook" id="guestbook">
+      <div class="container">
+        <h2>방명록</h2>
+        <div class="guestbook-grid">
+          <form class="guestbook-form" id="guestbook-form">
+            <label for="guestbook-name">이름</label>
+            <input id="guestbook-name" name="name" type="text" placeholder="이름을 입력하세요" required>
+            <label for="guestbook-message">메시지</label>
+            <textarea id="guestbook-message" name="message" rows="6" placeholder="응원의 한마디를 남겨주세요" required></textarea>
+            <button type="submit">방명록 남기기</button>
+          </form>
+          <div class="guestbook-list" id="guestbook-list">
+            <p>방명록을 불러오는 중입니다…</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -873,6 +981,9 @@
 
   <div class="toast" role="status" aria-live="polite"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="supabase-guestbook.js"></script>
   <script>
     const toast = document.querySelector(".toast");
     let toastTimer;
