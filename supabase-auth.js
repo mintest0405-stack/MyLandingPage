@@ -169,10 +169,20 @@ async function handleSignup(event) {
     return;
   }
 
-  showToast("환영합니다! 자동 로그인됩니다.");
   loginUsername.value = username;
   loginPassword.value = signupPassword.value;
-  await handleLogin();
+  const loggedIn = await handleLogin();
+
+  if (loggedIn) {
+    alert("환영합니다! 자동 로그인되었습니다.");
+    showToast("환영합니다! 자동 로그인되었습니다.");
+    if (signupCard) {
+      signupCard.classList.add("collapsed");
+    }
+    if (toggleSignupButton) {
+      toggleSignupButton.textContent = "회원가입 하기";
+    }
+  }
 }
 
 async function handleLogin(event) {
@@ -182,7 +192,7 @@ async function handleLogin(event) {
 
   if (!username || !password) {
     loginStatus.textContent = "아이디와 비밀번호를 모두 입력해주세요.";
-    return;
+    return false;
   }
 
   const { data, error } = await supabaseClient
@@ -195,15 +205,16 @@ async function handleLogin(event) {
   if (error) {
     loginStatus.textContent = "로그인 중 오류가 발생했습니다.";
     console.error(error);
-    return;
+    return false;
   }
 
   if (!data || data.length === 0) {
     loginStatus.textContent = "아이디 또는 비밀번호가 틀렸습니다.";
-    return;
+    return false;
   }
 
   loginStatus.textContent = `환영합니다, ${data[0].username}님!`;
+  return true;
 }
 
 function togglePasswordVisibility(button) {
