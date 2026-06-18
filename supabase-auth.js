@@ -84,11 +84,12 @@ async function checkUsernameUnique(username) {
     .limit(1);
 
   if (error) {
-    console.error(error);
+    console.error("Username uniqueness check failed:", error);
+    showToast("아이디 중복 확인 중 오류가 발생했습니다.");
     return false;
   }
 
-  return data.length === 0;
+  return Array.isArray(data) ? data.length === 0 : false;
 }
 
 function randomUsername() {
@@ -148,13 +149,14 @@ async function handleSignup(event) {
     return;
   }
 
-  const username = signupUsername.value.trim();
-  if (!(await checkUsernameUnique(username))) {
-    setFieldState(signupUsername, false, "이미 사용중인 아이디입니다.");
+  if (!(await validateUsernameUnique())) {
+    showToast("아이디를 확인해주세요.");
     return;
   }
 
-  const { error } = await supabaseClient.from("user_accounts").insert([
+  const username = signupUsername.value.trim();
+
+  const { data, error } = await supabaseClient.from("user_accounts").insert([
     {
       username,
       phone: signupPhone.value.trim(),
@@ -165,7 +167,12 @@ async function handleSignup(event) {
 
   if (error) {
     showToast("회원가입 중 오류가 발생했습니다.");
-    console.error(error);
+    console.error("Signup insert failed:", error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    showToast("회원가입이 정상적으로 처리되지 않았습니다.");
     return;
   }
 
