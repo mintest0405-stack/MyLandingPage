@@ -1,5 +1,6 @@
 const signupForm = document.getElementById("signup-form");
 const loginForm = document.getElementById("login-form");
+const toggleSignupButton = document.getElementById("toggle-signup");
 const generateUsernameButton = document.getElementById("generate-username");
 const usernameFeedback = document.getElementById("username-feedback");
 const phoneFeedback = document.getElementById("phone-feedback");
@@ -7,6 +8,7 @@ const emailFeedback = document.getElementById("email-feedback");
 const passwordFeedback = document.getElementById("password-feedback");
 const passwordConfirmFeedback = document.getElementById("password-confirm-feedback");
 const loginStatus = document.getElementById("login-status");
+const signupCard = document.getElementById("signup-card");
 
 const signupUsername = document.getElementById("signup-username");
 const signupPhone = document.getElementById("signup-phone");
@@ -16,10 +18,11 @@ const signupPasswordConfirm = document.getElementById("signup-password-confirm")
 const loginUsername = document.getElementById("login-username");
 const loginPassword = document.getElementById("login-password");
 
-const supabaseClient = supabase.createClient(
+window.supabaseClient = window.supabaseClient || supabase.createClient(
   window.SUPABASE_CONFIG.url,
   window.SUPABASE_CONFIG.anonKey
 );
+const supabaseClient = window.supabaseClient;
 
 const phonePattern = /^01\d{8,9}$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -100,7 +103,7 @@ function randomUsername() {
 
 async function generateRandomUsernames() {
   const suggestions = new Set();
-  while (suggestions.size < 10) {
+  while (suggestions.size < 50) {
     suggestions.add(randomUsername());
   }
   return Array.from(suggestions);
@@ -116,6 +119,23 @@ async function attemptGenerateUsername() {
     }
   }
   setFieldState(signupUsername, false, "사용 가능한 아이디를 찾을 수 없습니다. 다시 시도해주세요.");
+}
+
+async function validateUsernameUnique() {
+  const value = signupUsername.value.trim();
+  if (!value) {
+    setFieldState(signupUsername, false, "아이디를 입력해주세요.");
+    return false;
+  }
+  const unique = await checkUsernameUnique(value);
+  setFieldState(signupUsername, unique, unique ? "사용 가능한 아이디입니다." : "이미 사용중인 아이디입니다.");
+  return unique;
+}
+
+function toggleSignupCard() {
+  if (!signupCard) return;
+  signupCard.classList.remove("collapsed");
+  signupCard.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 async function handleSignup(event) {
@@ -192,12 +212,17 @@ function togglePasswordVisibility(button) {
 
 if (signupForm) {
   signupUsername.addEventListener("input", validateUsername);
+  signupUsername.addEventListener("blur", validateUsernameUnique);
   signupPhone.addEventListener("input", validatePhone);
   signupEmail.addEventListener("input", validateEmail);
   signupPassword.addEventListener("input", validatePassword);
   signupPasswordConfirm.addEventListener("input", validatePasswordConfirm);
   generateUsernameButton.addEventListener("click", attemptGenerateUsername);
   signupForm.addEventListener("submit", handleSignup);
+}
+
+if (toggleSignupButton) {
+  toggleSignupButton.addEventListener("click", toggleSignupCard);
 }
 
 if (loginForm) {
