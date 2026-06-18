@@ -525,6 +525,10 @@
       min-height: 18px;
     }
 
+    .auth-card.collapsed {
+      display: none;
+    }
+
     .auth-card .field-valid {
       color: #0f9d58;
     }
@@ -576,6 +580,12 @@
 
     .auth-card button {
       width: 100%;
+    }
+
+    .button.secondary {
+      background: #f4f9ff;
+      color: var(--blue);
+      border: 1px solid #dce4ed;
     }
 
     .guestbook-item {
@@ -966,60 +976,58 @@
   <section class="auth-section" id="auth">
     <div class="container">
       <div class="auth-card-wrap">
-        <article class="auth-card">
-          <h2>회원가입</h2>
-          <form id="signup-form">
-            <label for="signup-username">아이디</label>
-            <div class="input-group">
-              <input id="signup-username" name="username" type="text" placeholder="아이디를 입력하세요" required>
-              <button id="generate-username" type="button">추천</button>
-            </div>
-            <div id="username-feedback" class="field-feedback"></div>
+          <article class="auth-card auth-card--login">
+            <h2>로그인</h2>
+            <form id="login-form">
+              <label for="login-username">아이디</label>
+              <input id="login-username" name="username" type="text" placeholder="아이디를 입력하세요" required>
 
-            <label for="signup-phone">전화번호</label>
-            <input id="signup-phone" name="phone" type="tel" placeholder="01012345678" required>
-            <div id="phone-feedback" class="field-feedback"></div>
+              <label for="login-password">비밀번호</label>
+              <div class="input-group password-group">
+                <input id="login-password" name="password" type="password" placeholder="비밀번호를 입력하세요" required>
+                <button class="password-toggle" type="button" aria-label="비밀번호 보기">👁️</button>
+              </div>
 
-            <label for="signup-email">이메일</label>
-            <input id="signup-email" name="email" type="email" placeholder="example@naver.com" required>
-            <div id="email-feedback" class="field-feedback"></div>
+              <button class="button primary" type="submit">로그인</button>
+              <button class="button secondary" type="button" id="toggle-signup">회원가입 하기</button>
+            </form>
+            <div class="login-status" id="login-status"></div>
+          </article>
 
-            <label for="signup-password">비밀번호</label>
-            <div class="input-group password-group">
-              <input id="signup-password" name="password" type="password" placeholder="비밀번호를 입력하세요" required>
-              <button class="password-toggle" type="button" aria-label="비밀번호 보기">👁️</button>
-            </div>
-            <div id="password-feedback" class="field-feedback"></div>
+          <article class="auth-card collapsed" id="signup-card">
+            <h2>회원가입</h2>
+            <form id="signup-form">
+              <label for="signup-username">아이디</label>
+              <div class="input-group">
+                <input id="signup-username" name="username" type="text" placeholder="아이디를 입력하세요" required>
+                <button id="generate-username" type="button">추천</button>
+              </div>
+              <div id="username-feedback" class="field-feedback"></div>
 
-            <label for="signup-password-confirm">비밀번호 확인</label>
-            <div class="input-group password-group">
-              <input id="signup-password-confirm" name="passwordConfirm" type="password" placeholder="비밀번호를 다시 입력하세요" required>
-              <button class="password-toggle" type="button" aria-label="비밀번호 보기">👁️</button>
-            </div>
-            <div id="password-confirm-feedback" class="field-feedback"></div>
+              <label for="signup-phone">전화번호</label>
+              <input id="signup-phone" name="phone" type="tel" placeholder="01012345678" required>
+              <div id="phone-feedback" class="field-feedback"></div>
 
-            <button class="button primary" type="submit">회원가입</button>
-          </form>
-        </article>
+              <label for="signup-email">이메일</label>
+              <input id="signup-email" name="email" type="email" placeholder="example@naver.com" required>
+              <div id="email-feedback" class="field-feedback"></div>
 
-        <article class="auth-card">
-          <h2>로그인</h2>
-          <form id="login-form">
-            <label for="login-username">아이디</label>
-            <input id="login-username" name="username" type="text" placeholder="아이디를 입력하세요" required>
+              <label for="signup-password">비밀번호</label>
+              <div class="input-group password-group">
+                <input id="signup-password" name="password" type="password" placeholder="비밀번호를 입력하세요" required>
+                <button class="password-toggle" type="button" aria-label="비밀번호 보기">👁️</button>
+              </div>
+              <div id="password-feedback" class="field-feedback"></div>
 
-            <label for="login-password">비밀번호</label>
-            <div class="input-group password-group">
-              <input id="login-password" name="password" type="password" placeholder="비밀번호를 입력하세요" required>
-              <button class="password-toggle" type="button" aria-label="비밀번호 보기">👁️</button>
-            </div>
+              <label for="signup-password-confirm">비밀번호 확인</label>
+              <div class="input-group password-group">
+                <input id="signup-password-confirm" name="passwordConfirm" type="password" placeholder="비밀번호를 다시 입력하세요" required>
+                <button class="password-toggle" type="button" aria-label="비밀번호 보기">👁️</button>
+              </div>
+              <div id="password-confirm-feedback" class="field-feedback"></div>
 
-            <button class="button primary" type="submit">로그인</button>
-          </form>
-          <div class="login-status" id="login-status"></div>
-        </article>
-      </div>
-    </div>
+              <button class="button primary" type="submit">회원가입</button>
+            </form>
   </section>
 
   <aside class="side-bar" aria-label="빠른 문의">
