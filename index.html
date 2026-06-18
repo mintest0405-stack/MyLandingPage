@@ -476,8 +476,23 @@
       white-space: pre-wrap;
     }
 
+    .guestbook-item .delete-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      background: #ff4d49;
+      color: #ffffff;
+      border-radius: 12px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
     .guestbook-item time {
       display: block;
+      margin-top: 10px;
       color: rgba(102, 112, 122, 0.9);
       font-size: 13px;
       font-weight: 700;
@@ -940,6 +955,8 @@
           <form class="guestbook-form" id="guestbook-form">
             <label for="guestbook-name">이름</label>
             <input id="guestbook-name" name="name" type="text" placeholder="이름을 입력하세요" required>
+            <label for="guestbook-password">비밀번호</label>
+            <input id="guestbook-password" name="password" type="password" placeholder="삭제용 비밀번호" required>
             <label for="guestbook-message">메시지</label>
             <textarea id="guestbook-message" name="message" rows="6" placeholder="응원의 한마디를 남겨주세요" required></textarea>
             <button type="submit">방명록 남기기</button>
