@@ -213,25 +213,29 @@ function togglePasswordVisibility(button) {
   button.textContent = input.type === "password" ? "👁️" : "🙈";
 }
 
-if (signupForm) {
-  signupUsername.addEventListener("input", validateUsername);
-  signupUsername.addEventListener("blur", validateUsernameUnique);
-  signupPhone.addEventListener("input", validatePhone);
-  signupEmail.addEventListener("input", validateEmail);
-  signupPassword.addEventListener("input", validatePassword);
-  signupPasswordConfirm.addEventListener("input", validatePasswordConfirm);
-  generateUsernameButton.addEventListener("click", attemptGenerateUsername);
-  signupForm.addEventListener("submit", handleSignup);
+function initAuthEvents() {
+  if (signupForm) {
+    signupUsername.addEventListener("input", validateUsername);
+    signupUsername.addEventListener("blur", validateUsernameUnique);
+    signupPhone.addEventListener("input", validatePhone);
+    signupEmail.addEventListener("input", validateEmail);
+    signupPassword.addEventListener("input", validatePassword);
+    signupPasswordConfirm.addEventListener("input", validatePasswordConfirm);
+    generateUsernameButton.addEventListener("click", attemptGenerateUsername);
+    signupForm.addEventListener("submit", handleSignup);
+  }
+
+  if (toggleSignupButton) {
+    toggleSignupButton.addEventListener("click", toggleSignupCard);
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", handleLogin);
+  }
+
+  document.querySelectorAll(".password-toggle").forEach((button) => {
+    button.addEventListener("click", () => togglePasswordVisibility(button));
+  });
 }
 
-if (toggleSignupButton) {
-  toggleSignupButton.addEventListener("click", toggleSignupCard);
-}
-
-if (loginForm) {
-  loginForm.addEventListener("submit", handleLogin);
-}
-
-document.querySelectorAll(".password-toggle").forEach((button) => {
-  button.addEventListener("click", () => togglePasswordVisibility(button));
-});
+document.addEventListener("DOMContentLoaded", initAuthEvents);
