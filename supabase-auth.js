@@ -133,9 +133,12 @@ async function validateUsernameUnique() {
 }
 
 function toggleSignupCard() {
-  if (!signupCard) return;
-  signupCard.classList.remove("collapsed");
-  signupCard.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (!signupCard || !toggleSignupButton) return;
+  const isCollapsed = signupCard.classList.toggle("collapsed");
+  toggleSignupButton.textContent = isCollapsed ? "회원가입 하기" : "회원가입 닫기";
+  if (!isCollapsed) {
+    signupCard.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 }
 
 async function handleSignup(event) {
