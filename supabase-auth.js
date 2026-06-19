@@ -1,7 +1,7 @@
 const signupForm = document.getElementById("signup-form");
 const loginForm = document.getElementById("login-form");
 const toggleSignupButton = document.getElementById("toggle-signup");
-const generateUsernameButton = document.getElementById("generate-username");
+const checkUsernameButton = document.getElementById("check-username");
 const usernameFeedback = document.getElementById("username-feedback");
 const phoneFeedback = document.getElementById("phone-feedback");
 const emailFeedback = document.getElementById("email-feedback");
@@ -254,7 +254,9 @@ function initAuthEvents() {
     signupEmail.addEventListener("input", validateEmail);
     signupPassword.addEventListener("input", validatePassword);
     signupPasswordConfirm.addEventListener("input", validatePasswordConfirm);
-    generateUsernameButton.addEventListener("click", attemptGenerateUsername);
+    if (checkUsernameButton) {
+      checkUsernameButton.addEventListener("click", validateUsernameUnique);
+    }
     signupForm.addEventListener("submit", handleSignup);
   }
 
