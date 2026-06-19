@@ -1,32 +1,117 @@
-const signupForm = document.getElementById("signup-form");
-const loginForm = document.getElementById("login-form");
-const toggleSignupButton = document.getElementById("toggle-signup");
-const checkUsernameButton = document.getElementById("check-username");
-const usernameFeedback = document.getElementById("username-feedback");
-const phoneFeedback = document.getElementById("phone-feedback");
-const emailFeedback = document.getElementById("email-feedback");
-const passwordFeedback = document.getElementById("password-feedback");
-const passwordConfirmFeedback = document.getElementById("password-confirm-feedback");
-const loginStatus = document.getElementById("login-status");
-const signupCard = document.getElementById("signup-card");
+let signupForm;
+let loginForm;
+let toggleSignupButton;
+let checkUsernameButton;
+let usernameFeedback;
+let phoneFeedback;
+let emailFeedback;
+let passwordFeedback;
+let passwordConfirmFeedback;
+let loginStatus;
+let signupCard;
 
-const signupUsername = document.getElementById("signup-username");
-const signupPhone = document.getElementById("signup-phone");
-const signupEmail = document.getElementById("signup-email");
-const signupPassword = document.getElementById("signup-password");
-const signupPasswordConfirm = document.getElementById("signup-password-confirm");
-const loginUsername = document.getElementById("login-username");
-const loginPassword = document.getElementById("login-password");
+let signupUsername;
+let signupPhone;
+let signupEmail;
+let signupPassword;
+let signupPasswordConfirm;
+let loginUsername;
+let loginPassword;
 
-window.supabaseClient = window.supabaseClient || supabase.createClient(
-  window.SUPABASE_CONFIG.url,
-  window.SUPABASE_CONFIG.anonKey
-);
-const supabaseClient = window.supabaseClient;
+function cacheAuthElements() {
+  signupForm = document.getElementById("signup-form");
+  loginForm = document.getElementById("login-form");
+  toggleSignupButton = document.getElementById("toggle-signup");
+  checkUsernameButton = document.getElementById("check-username");
+  usernameFeedback = document.getElementById("username-feedback");
+  phoneFeedback = document.getElementById("phone-feedback");
+  emailFeedback = document.getElementById("email-feedback");
+  passwordFeedback = document.getElementById("password-feedback");
+  passwordConfirmFeedback = document.getElementById("password-confirm-feedback");
+  loginStatus = document.getElementById("login-status");
+  signupCard = document.getElementById("signup-card");
+
+  signupUsername = document.getElementById("signup-username");
+  signupPhone = document.getElementById("signup-phone");
+  signupEmail = document.getElementById("signup-email");
+  signupPassword = document.getElementById("signup-password");
+  signupPasswordConfirm = document.getElementById("signup-password-confirm");
+  loginUsername = document.getElementById("login-username");
+  loginPassword = document.getElementById("login-password");
+}
+
+let supabaseClient;
+
+function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient;
+
+  if (!window.supabase || !window.SUPABASE_CONFIG) {
+    showToast("회원가입 기능을 준비하는 중입니다. 잠시 후 다시 시도해주세요.");
+    return null;
+  }
+
+  window.supabaseClient = window.supabaseClient || window.supabase.createClient(
+    window.SUPABASE_CONFIG.url,
+    window.SUPABASE_CONFIG.anonKey
+  );
+  supabaseClient = window.supabaseClient;
+  return supabaseClient;
+}
+
+function handleAuthError(error, fallbackMessage) {
+  console.error(fallbackMessage, error);
+  showToast(fallbackMessage);
+}
+
+function isMissingUserAccountsTable(error) {
+  return error && (error.code === "PGRST205" || String(error.message || "").includes("public.user_accounts"));
+}
+
+function showMissingUserAccountsTableMessage() {
+  const message = "Supabase에 user_accounts 테이블을 생성한 뒤 페이지를 새로고침해주세요.";
+  if (loginStatus) {
+    loginStatus.textContent = message;
+  }
+  showToast(message);
+}
+
+function showSignupDatabaseError(error) {
+  console.error("Signup insert failed:", error);
+
+  if (isMissingUserAccountsTable(error)) {
+    showMissingUserAccountsTableMessage();
+    return;
+  }
+
+  if (error.code === "23505" || error.code === "409") {
+    setFieldState(signupUsername, false, "아이디가 중복됩니다.");
+    showToast("이미 사용 중인 아이디입니다.");
+    return;
+  }
+
+  if (error.code === "42501") {
+    showToast("Supabase RLS insert 정책을 확인해주세요.");
+    return;
+  }
+
+  const detail = error.message ? `회원가입 오류: ${error.message}` : "회원가입 중 오류가 발생했습니다.";
+  if (loginStatus) {
+    loginStatus.textContent = detail;
+  }
+  showToast(detail);
+}
+
+if (window.supabase && window.SUPABASE_CONFIG) {
+  window.supabaseClient = window.supabaseClient || window.supabase.createClient(
+    window.SUPABASE_CONFIG.url,
+    window.SUPABASE_CONFIG.anonKey
+  );
+  supabaseClient = window.supabaseClient;
+}
 
 const phonePattern = /^01\d{8,9}$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+const passwordPattern = /^.{4,}$/;
 
 function setFieldState(field, valid, message) {
   field.classList.toggle("valid", valid);
@@ -75,7 +160,7 @@ function sanitizePhoneInput() {
 function validatePassword() {
   const value = signupPassword.value;
   const valid = passwordPattern.test(value);
-  setFieldState(signupPassword, valid, valid ? "안전한 비밀번호입니다." : "8자 이상, 대소문자, 숫자, 특수문자 모두 포함하세요.");
+  setFieldState(signupPassword, valid, valid ? "사용 가능한 비밀번호입니다." : "비밀번호는 4자 이상 입력하세요.");
   return valid;
 }
 
@@ -86,19 +171,31 @@ function validatePasswordConfirm() {
 }
 
 async function checkUsernameUnique(username) {
-  const { data, error } = await supabaseClient
-    .from("user_accounts")
-    .select("id")
-    .eq("username", username)
-    .limit(1);
+  try {
+    const client = getSupabaseClient();
+    if (!client) return false;
 
-  if (error) {
-    console.error("Username uniqueness check failed:", error);
-    showToast("아이디 중복 확인 중 오류가 발생했습니다.");
+    const { data, error } = await client
+      .from("user_accounts")
+      .select("id")
+      .eq("username", username)
+      .limit(1);
+
+    if (error) {
+      if (isMissingUserAccountsTable(error)) {
+        console.error("Missing user_accounts table:", error);
+        showMissingUserAccountsTableMessage();
+        return false;
+      }
+      handleAuthError(error, "아이디 중복 확인 중 오류가 발생했습니다.");
+      return false;
+    }
+
+    return Array.isArray(data) ? data.length === 0 : false;
+  } catch (error) {
+    handleAuthError(error, "아이디 중복 확인 중 오류가 발생했습니다.");
     return false;
   }
-
-  return Array.isArray(data) ? data.length === 0 : false;
 }
 
 function randomUsername() {
@@ -153,90 +250,112 @@ function toggleSignupCard() {
 
 async function handleSignup(event) {
   event.preventDefault();
-  const usernameValid = validateUsername();
-  const phoneValid = sanitizePhoneInput();
-  const emailValid = validateEmail();
-  const passwordValid = validatePassword();
-  const passwordConfirmValid = validatePasswordConfirm();
+  try {
+    const usernameValid = validateUsername();
+    const phoneValid = sanitizePhoneInput();
+    const emailValid = validateEmail();
+    const passwordValid = validatePassword();
+    const passwordConfirmValid = validatePasswordConfirm();
 
-  if (!usernameValid || !phoneValid || !emailValid || !passwordValid || !passwordConfirmValid) {
-    showToast("입력값을 다시 확인해주세요.");
-    return;
-  }
-
-  if (!(await validateUsernameUnique())) {
-    showToast("아이디가 중복됩니다.");
-    return;
-  }
-
-  const username = signupUsername.value.trim();
-
-  const { data, error } = await supabaseClient.from("user_accounts").insert([
-    {
-      username,
-      phone: signupPhone.value.trim(),
-      email: signupEmail.value.trim(),
-      password: signupPassword.value
+    if (!usernameValid || !phoneValid || !emailValid || !passwordValid || !passwordConfirmValid) {
+      if (!usernameValid) {
+        showToast("아이디를 입력해주세요.");
+      } else if (!phoneValid) {
+        showToast("전화번호는 01012345678 형식으로 입력해주세요.");
+      } else if (!emailValid) {
+        showToast("이메일 주소를 확인해주세요.");
+      } else if (!passwordValid) {
+        showToast("비밀번호는 4자 이상 입력해주세요.");
+      } else {
+        showToast("비밀번호 확인이 일치하지 않습니다.");
+      }
+      return;
     }
-  ]);
 
-  if (error) {
-    showToast("회원가입 중 오류가 발생했습니다.");
-    console.error("Signup insert failed:", error);
-    return;
-  }
+    const username = signupUsername.value.trim();
 
-  if (!data || data.length === 0) {
-    showToast("회원가입이 정상적으로 처리되지 않았습니다.");
-    return;
-  }
+    const client = getSupabaseClient();
+    if (!client) return;
 
-  loginUsername.value = username;
-  loginPassword.value = signupPassword.value;
-  const loggedIn = await handleLogin();
+    const { error } = await client
+      .from("user_accounts")
+      .insert([
+        {
+          username,
+          phone: signupPhone.value.trim(),
+          email: signupEmail.value.trim(),
+          password: signupPassword.value
+        }
+      ]);
 
-  if (loggedIn) {
-    loginStatus.textContent = `가입을 환영합니다, ${username}님!`;
+    if (error) {
+      showSignupDatabaseError(error);
+      return;
+    }
+
+    loginUsername.value = username;
+    loginPassword.value = signupPassword.value;
+    loginStatus.textContent = "가입을 환영합니다!";
     showToast("가입을 환영합니다!");
+    signupForm.reset();
+
     if (signupCard) {
       signupCard.classList.add("collapsed");
     }
     if (toggleSignupButton) {
       toggleSignupButton.textContent = "회원가입 하기";
     }
+  } catch (error) {
+    handleAuthError(error, "회원가입 중 오류가 발생했습니다.");
   }
 }
 
 async function handleLogin(event) {
   if (event) event.preventDefault();
-  const username = loginUsername.value.trim();
-  const password = loginPassword.value;
+  try {
+    const username = loginUsername.value.trim();
+    const password = loginPassword.value;
 
-  if (!username || !password) {
-    loginStatus.textContent = "아이디와 비밀번호를 모두 입력해주세요.";
+    if (!username || !password) {
+      loginStatus.textContent = "아이디와 비밀번호를 모두 입력해주세요.";
+      return false;
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      loginStatus.textContent = "로그인 기능을 준비하는 중입니다. 잠시 후 다시 시도해주세요.";
+      return false;
+    }
+
+    const { data, error } = await client
+      .from("user_accounts")
+      .select("id, username")
+      .eq("username", username)
+      .eq("password", password)
+      .limit(1);
+
+    if (error) {
+      if (isMissingUserAccountsTable(error)) {
+        console.error("Missing user_accounts table:", error);
+        showMissingUserAccountsTableMessage();
+        return false;
+      }
+      loginStatus.textContent = "로그인 중 오류가 발생했습니다.";
+      console.error(error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      loginStatus.textContent = "아이디 또는 비밀번호가 틀렸습니다.";
+      return false;
+    }
+
+    loginStatus.textContent = `환영합니다, ${data[0].username}님!`;
+    return true;
+  } catch (error) {
+    handleAuthError(error, "로그인 중 오류가 발생했습니다.");
     return false;
   }
-
-  const { data, error } = await supabaseClient
-    .from("user_accounts")
-    .select("id, username")
-    .eq("username", username)
-    .eq("password", password)
-    .limit(1);
-
-  if (error) {
-    loginStatus.textContent = "로그인 중 오류가 발생했습니다.";
-    console.error(error);
-    return false;
-  }
-
-  if (!data || data.length === 0) {
-    loginStatus.textContent = "아이디 또는 비밀번호가 틀렸습니다.";
-    return false;
-  }
-
-  loginStatus.textContent = `환영합니다, ${data[0].username}님!`;
-  return true;
 }
 
 function togglePasswordVisibility(button) {
@@ -247,15 +366,25 @@ function togglePasswordVisibility(button) {
 }
 
 function initAuthEvents() {
+  cacheAuthElements();
+
   if (signupForm) {
     signupUsername.addEventListener("input", validateUsername);
-    signupUsername.addEventListener("blur", validateUsernameUnique);
+    signupUsername.addEventListener("blur", () => {
+      validateUsernameUnique().catch((error) => {
+        handleAuthError(error, "아이디 중복 확인 중 오류가 발생했습니다.");
+      });
+    });
     signupPhone.addEventListener("input", sanitizePhoneInput);
     signupEmail.addEventListener("input", validateEmail);
     signupPassword.addEventListener("input", validatePassword);
     signupPasswordConfirm.addEventListener("input", validatePasswordConfirm);
     if (checkUsernameButton) {
-      checkUsernameButton.addEventListener("click", validateUsernameUnique);
+      checkUsernameButton.addEventListener("click", () => {
+        validateUsernameUnique().catch((error) => {
+          handleAuthError(error, "아이디 중복 확인 중 오류가 발생했습니다.");
+        });
+      });
     }
     signupForm.addEventListener("submit", handleSignup);
   }
