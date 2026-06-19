@@ -477,6 +477,10 @@
       box-shadow: 0 22px 50px rgba(0, 0, 0, 0.08);
     }
 
+    .auth-card--login {
+      min-height: 320px;
+    }
+
     .auth-card h2 {
       margin: 0 0 24px;
       font-size: clamp(28px, 4vw, 38px);
@@ -531,16 +535,11 @@
     }
 
     .auth-card.collapsed {
-      max-height: 0;
-      overflow: hidden;
       visibility: hidden;
-      padding: 0;
-      margin: 0;
-      transition: max-height 0.3s ease, visibility 0.3s ease, padding 0.3s ease, margin 0.3s ease;
-    }
-
-    .auth-card {
-      transition: max-height 0.3s ease, visibility 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+      pointer-events: none;
+      position: absolute;
+      width: min(100%, 760px);
+      left: -9999px;
     }
 
     .auth-card .field-valid {
