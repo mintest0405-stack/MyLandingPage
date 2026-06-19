@@ -138,7 +138,7 @@ async function validateUsernameUnique() {
     return false;
   }
   const unique = await checkUsernameUnique(value);
-  setFieldState(signupUsername, unique, unique ? "사용 가능한 아이디입니다." : "이미 사용중인 아이디입니다.");
+  setFieldState(signupUsername, unique, unique ? "사용 가능한 아이디입니다." : "아이디가 중복됩니다.");
   return unique;
 }
 
@@ -165,7 +165,7 @@ async function handleSignup(event) {
   }
 
   if (!(await validateUsernameUnique())) {
-    showToast("아이디를 확인해주세요.");
+    showToast("아이디가 중복됩니다.");
     return;
   }
 
@@ -196,8 +196,8 @@ async function handleSignup(event) {
   const loggedIn = await handleLogin();
 
   if (loggedIn) {
-    alert("환영합니다! 자동 로그인되었습니다.");
-    showToast("환영합니다! 자동 로그인되었습니다.");
+    loginStatus.textContent = `가입을 환영합니다, ${username}님!`;
+    showToast("가입을 환영합니다!");
     if (signupCard) {
       signupCard.classList.add("collapsed");
     }
