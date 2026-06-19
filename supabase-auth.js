@@ -63,6 +63,15 @@ function validateEmail() {
   return valid;
 }
 
+function sanitizePhoneInput() {
+  const raw = signupPhone.value;
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (signupPhone.value !== digits) {
+    signupPhone.value = digits;
+  }
+  return validatePhone();
+}
+
 function validatePassword() {
   const value = signupPassword.value;
   const valid = passwordPattern.test(value);
@@ -144,7 +153,13 @@ function toggleSignupCard() {
 
 async function handleSignup(event) {
   event.preventDefault();
-  if (!validateUsername() || !validatePhone() || !validateEmail() || !validatePassword() || !validatePasswordConfirm()) {
+  const usernameValid = validateUsername();
+  const phoneValid = sanitizePhoneInput();
+  const emailValid = validateEmail();
+  const passwordValid = validatePassword();
+  const passwordConfirmValid = validatePasswordConfirm();
+
+  if (!usernameValid || !phoneValid || !emailValid || !passwordValid || !passwordConfirmValid) {
     showToast("입력값을 다시 확인해주세요.");
     return;
   }
@@ -235,7 +250,7 @@ function initAuthEvents() {
   if (signupForm) {
     signupUsername.addEventListener("input", validateUsername);
     signupUsername.addEventListener("blur", validateUsernameUnique);
-    signupPhone.addEventListener("input", validatePhone);
+    signupPhone.addEventListener("input", sanitizePhoneInput);
     signupEmail.addEventListener("input", validateEmail);
     signupPassword.addEventListener("input", validatePassword);
     signupPasswordConfirm.addEventListener("input", validatePasswordConfirm);

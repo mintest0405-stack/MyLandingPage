@@ -4,14 +4,11 @@ const guestbookPassword = document.getElementById("guestbook-password");
 const guestbookMessage = document.getElementById("guestbook-message");
 const guestbookList = document.getElementById("guestbook-list");
 
-const supabaseClient = supabase.createClient(
-  window.SUPABASE_CONFIG.url,
-  window.SUPABASE_CONFIG.anonKey
-);
+const guestbookClient = window.supabaseClient;
 
 async function fetchGuestbookEntries() {
   if (!guestbookList) return;
-  const { data, error } = await supabaseClient
+  const { data, error } = await guestbookClient
     .from("guestbook")
     .select("id, name, message, created_at")
     .order("created_at", { ascending: false })
@@ -66,7 +63,7 @@ async function handleGuestbookSubmit(event) {
     return;
   }
 
-  const { error } = await supabaseClient.from("guestbook").insert([
+  const { error } = await guestbookClient.from("guestbook").insert([
     {
       name,
       password,
@@ -110,7 +107,7 @@ async function handleGuestbookDelete(event) {
     return;
   }
 
-  const { data, error } = await supabaseClient
+  const { data, error } = await guestbookClient
     .from("guestbook")
     .delete({ returning: "representation" })
     .match({ id: Number(entryId), name: entryName, password: inputPassword.trim() });
